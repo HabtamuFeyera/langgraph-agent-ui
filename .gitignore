@@ -1,0 +1,10 @@
+# Ignore Python cache files
+*.pyc
+__pycache__/
+
+# Ignore environment files
+.env
+
+# Ignore specific files or directories
+media/my_icon_file.png
+docker/Dockerfile.app

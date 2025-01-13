@@ -9,6 +9,8 @@ COPY pyproject.toml .
 COPY uv.lock .
 RUN pip install --no-cache-dir uv
 # Only install the client dependencies
+# Install pyperclip to ensure it's available
+RUN pip install pyperclip
 RUN uv sync --frozen --only-group client
 
 COPY src/client/ ./client/

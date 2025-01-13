@@ -1,6 +1,8 @@
 import asyncio
 import os
+import uuid
 import urllib.parse
+import pyperclip  # To handle the copy functionality
 from collections.abc import AsyncGenerator
 
 import streamlit as st
@@ -14,18 +16,14 @@ from schema.task_data import TaskData, TaskDataStatus
 
 # A Streamlit app for interacting with the langgraph agent via a simple chat interface.
 # The app has three main functions which are all run async:
-
 # - main() - sets up the streamlit app and high level structure
 # - draw_messages() - draws a set of chat messages - either replaying existing messages
 #   or streaming new ones.
 # - handle_feedback() - Draws a feedback widget and records feedback from the user.
-
 # The app heavily uses AgentClient to interact with the agent's FastAPI endpoints.
 
-
-APP_TITLE = "Agent Service Toolkit"
-APP_ICON = "🧰"
-
+APP_TITLE = "Langgraph-agent-ui"
+APP_ICON = "💬"  
 
 async def main() -> None:
     st.set_page_config(
@@ -84,9 +82,8 @@ async def main() -> None:
     # Config options
     with st.sidebar:
         st.header(f"{APP_ICON} {APP_TITLE}")
-        ""
-        "Full toolkit for running an AI agent service built with LangGraph, FastAPI and Streamlit"
-        with st.popover(":material/settings: Settings", use_container_width=True):
+        st.write("Comprehensive framework for deploying AI agent services using LangGraph, FastAPI, and Streamlit.")
+        with st.popover("⚙️ Settings", use_container_width=True):
             model_idx = agent_client.info.models.index(agent_client.info.default_model)
             model = st.selectbox("LLM to use", options=agent_client.info.models, index=model_idx)
             agent_list = [a.key for a in agent_client.info.agents]
@@ -98,14 +95,17 @@ async def main() -> None:
             )
             use_streaming = st.toggle("Stream results", value=True)
 
-        @st.dialog("Architecture")
+        @st.dialog("🏛️ Architecture")
         def architecture_dialog() -> None:
             st.image(
-                "https://github.com/JoshuaC215/agent-service-toolkit/blob/main/media/agent_architecture.png?raw=true"
+                "https://github.com/HabtamuFeyera/langgraph-agent-ui/blob/main/media/agent_architecture.png?raw=true",
+                caption="Agent Service Architecture",
             )
-            "[View full size on Github](https://github.com/JoshuaC215/agent-service-toolkit/blob/main/media/agent_architecture.png)"
+            st.markdown(
+                "[View full size on GitHub](https://github.com/HabtamuFeyera/langgraph-agent-ui/blob/main/media/agent_architecture.png)"
+            )
             st.caption(
-                "App hosted on [Streamlit Cloud](https://share.streamlit.io/) with FastAPI service running in [Azure](https://learn.microsoft.com/en-us/azure/app-service/)"
+                "App hosted on [Streamlit Cloud](https://share.streamlit.io/) with FastAPI service running on [Azure](https://learn.microsoft.com/en-us/azure/app-service/)."
             )
 
         if st.button(":material/schema: Architecture", use_container_width=True):
@@ -113,39 +113,48 @@ async def main() -> None:
 
         with st.popover(":material/policy: Privacy", use_container_width=True):
             st.write(
-                "Prompts, responses and feedback in this app are anonymously recorded and saved to LangSmith for product evaluation and improvement purposes only."
+                "Prompts, responses, and feedback in this app are anonymously recorded and saved to LangSmith for product evaluation and improvement purposes only."
             )
 
-        @st.dialog("Share/resume chat")
+        @st.dialog("Share/Resume Chat")
         def share_chat_dialog() -> None:
+            # Retrieve the current session
             session = st.runtime.get_instance()._session_mgr.list_active_sessions()[0]
             st_base_url = urllib.parse.urlunparse(
                 [session.client.request.protocol, session.client.request.host, "", "", "", ""]
             )
-            # if it's not localhost, switch to https by default
+            # Ensure HTTPS is used if not localhost
             if not st_base_url.startswith("https") and "localhost" not in st_base_url:
                 st_base_url = st_base_url.replace("http", "https")
+            
+            # Construct the sharable chat URL
             chat_url = f"{st_base_url}?thread_id={st.session_state.thread_id}"
+            
+            # Display the chat URL
             st.markdown(f"**Chat URL:**\n```text\n{chat_url}\n```")
-            st.info("Copy the above URL to share or revisit this chat")
+            st.info("Copy the above URL to share or revisit this chat.")
 
-        if st.button(":material/upload: Share/resume chat", use_container_width=True):
+        # Add a button to trigger the share/resume chat dialog
+        if st.button(":material/upload: Share/Resume Chat", use_container_width=True):
             share_chat_dialog()
 
-        "[View the source code](https://github.com/JoshuaC215/agent-service-toolkit)"
+        # Provide additional source and attribution links
+        st.markdown(
+            "[View the source code](https://github.com/HabtamuFeyera/langgraph-agent-ui)"
+        )
         st.caption(
-            "Made with :material/favorite: by [Joshua](https://www.linkedin.com/in/joshua-k-carroll/) in Oakland"
+            "Made with :material/favorite: by [Habtamu Feyera](https://www.linkedin.com/in/habtamu-feyera-2447a917b/) in Addis Ababa."
         )
 
     # Draw existing messages
     messages: list[ChatMessage] = st.session_state.messages
 
     if len(messages) == 0:
-        WELCOME = "Hello! I'm an AI-powered research assistant with web search and a calculator. Ask me anything!"
+        WELCOME = "Hi there! I'm your AI-powered research assistant, equipped with web search and a calculator. Ask me anything—I'm here to help!"
         with st.chat_message("ai"):
             st.write(WELCOME)
 
-    # draw_messages() expects an async iterator over messages
+    # Draw messages
     async def amessage_iter() -> AsyncGenerator[ChatMessage, None]:
         for m in messages:
             yield m
@@ -326,33 +335,27 @@ async def draw_messages(
 
 
 async def handle_feedback() -> None:
-    """Draws a feedback widget and records feedback from the user."""
-
-    # Keep track of last feedback sent to avoid sending duplicates
-    if "last_feedback" not in st.session_state:
-        st.session_state.last_feedback = (None, None)
-
-    latest_run_id = st.session_state.messages[-1].run_id
-    feedback = st.feedback("stars", key=latest_run_id)
-
-    # If the feedback value or run ID has changed, send a new feedback record
-    if feedback is not None and (latest_run_id, feedback) != st.session_state.last_feedback:
-        # Normalize the feedback value (an index) to a score between 0 and 1
-        normalized_score = (feedback + 1) / 5.0
-
-        agent_client: AgentClient = st.session_state.agent_client
-        try:
-            await agent_client.acreate_feedback(
-                run_id=latest_run_id,
-                key="human-feedback-stars",
-                score=normalized_score,
-                kwargs={"comment": "In-line human feedback"},
+    """
+    Displays feedback widget to rate the response quality.
+    """
+    rating = st.slider(
+        "Rate this response", 0, 5, 0, help="Rate the quality of this response"
+    )
+    if st.button("Submit Feedback"):
+        # Handle the feedback
+        if rating >= 4:
+            status = TaskDataStatus.SUCCESS
+        elif rating == 3:
+            status = TaskDataStatus.PARTIALLY_SUCCESS
+        else:
+            status = TaskDataStatus.FAILURE
+        st.session_state.messages.append(
+            ChatMessage(
+                type="human",
+                content=f"Rated: {rating} - {status}",
             )
-        except AgentClientError as e:
-            st.error(f"Error recording feedback: {e}")
-            st.stop()
-        st.session_state.last_feedback = (latest_run_id, feedback)
-        st.toast("Feedback recorded", icon=":material/reviews:")
+        )
+        st.experimental_rerun()
 
 
 if __name__ == "__main__":

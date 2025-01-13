@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from langgraph.graph.state import CompiledStateGraph
+from agents.my_custom_agent import my_custom_agent
 
 from agents.bg_task_agent.bg_task_agent import bg_task_agent
 from agents.chatbot import chatbot
@@ -22,6 +23,10 @@ agents: dict[str, Agent] = {
         description="A research assistant with web search and calculator.", graph=research_assistant
     ),
     "bg-task-agent": Agent(description="A background task agent.", graph=bg_task_agent),
+    "my-custom-agent": Agent(  # Add your agent here
+        description="My custom agent for specialized tasks.",
+        graph=my_custom_agent,
+    ),
 }
 
 
