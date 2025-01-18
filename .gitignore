@@ -8,3 +8,4 @@ __pycache__/
 # Ignore specific files or directories
 media/my_icon_file.png
 docker/Dockerfile.app
+__pycache__/
