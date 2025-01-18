@@ -1,9 +1,7 @@
 from typing import Annotated, Any
-
 from dotenv import find_dotenv
 from pydantic import BeforeValidator, HttpUrl, SecretStr, TypeAdapter, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 from schema.models import (
     AllModelEnum,
     AnthropicModelName,
@@ -15,11 +13,9 @@ from schema.models import (
     Provider,
 )
 
-
 def check_str_is_http(x: str) -> str:
     http_url_adapter = TypeAdapter(HttpUrl)
     return str(http_url_adapter.validate_python(x))
-
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -49,6 +45,9 @@ class Settings(BaseSettings):
 
     OPENWEATHERMAP_API_KEY: SecretStr | None = None
 
+    # Add the new financial API key field
+    FINANCIAL_API_KEY: SecretStr | None = None  # Add this line for the financial API key
+
     LANGCHAIN_TRACING_V2: bool = False
     LANGCHAIN_PROJECT: str = "default"
     LANGCHAIN_ENDPOINT: Annotated[str, BeforeValidator(check_str_is_http)] = (
@@ -65,6 +64,7 @@ class Settings(BaseSettings):
             Provider.AWS: self.USE_AWS_BEDROCK,
             Provider.FAKE: self.USE_FAKE_MODEL,
         }
+
         active_keys = [k for k, v in api_keys.items() if v]
         if not active_keys:
             raise ValueError("At least one LLM API key must be provided.")
@@ -97,6 +97,10 @@ class Settings(BaseSettings):
                     self.AVAILABLE_MODELS.update(set(FakeModelName))
                 case _:
                     raise ValueError(f"Unknown provider: {provider}")
+
+        # Optionally add a check to ensure the FINANCIAL_API_KEY is provided if using financial APIs
+        if self.FINANCIAL_API_KEY is None:
+            raise ValueError("The financial API key must be provided.")
 
     @computed_field
     @property

@@ -2,6 +2,7 @@ import math
 import re
 
 import numexpr
+import yfinance as yf
 from langchain_core.tools import BaseTool, tool
 
 
