@@ -141,5 +141,5 @@ Created with ❤️ by [Habtamu Feyera](https://www.linkedin.com/in/habtamu-feye
 
 - **LinkedIn**: [Habtamu Feyera](https://www.linkedin.com/in/habtamu-feyera-2447a917b/)
 - **GitHub**: [Habtamu Feyera](https://github.com/HabtamuFeyera)
-- **YouTube**: [Decode AI with Habtamu](https://www.youtube.com/channel/UCxyz)
+- **YouTube**: [Decode AI with Habtamu](http://www.youtube.com/@DecodeAI_HF)
 
