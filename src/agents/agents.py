@@ -6,6 +6,7 @@ from agents.financial_agent.financial_agent import financial_agent
 from agents.bg_task_agent.bg_task_agent import bg_task_agent
 from agents.chatbot import chatbot
 from agents.research_assistant import research_assistant
+from agents.travel_agent import travel_agent  # Import the travel agent
 from schema import AgentInfo
 
 DEFAULT_AGENT = "research-assistant"
@@ -25,6 +26,10 @@ agents: dict[str, Agent] = {
     "financial-agent": Agent(
         description="A financial agent for stock prices, currency conversion, and more.",
         graph=financial_agent,
+    ),
+    "travel-agent": Agent(  # Add the travel agent
+        description="An AI Travel Agent for destination recommendations, weather updates, and travel planning.",
+        graph=travel_agent,
     ),
 }
 
