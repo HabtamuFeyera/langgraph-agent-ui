@@ -1,24 +1,3 @@
-"""I don't know why this world is filled with sorrow and 
-everytime it comes with disappointing news from east to west
-every situation is bad as work of evils in each area.
-I am Habtamu Feyera and I have taken different short courses
-on different online platforms including intensive training
-at 10 Acedamy. Now I am expert on the Generative AI Engineer and
-large language models application and I'm expert on the python 
-language programming and machine learning engineering. What am trying
-now is not much satisfactory including searching a jobs always and
-the shortage of the financial for even survival and noone uderstand
-me to do something better than now. I am very passionate for techno
-especially in the area of AI particular on generative artificial intelligence
-it is my faviorite area of stack.In my situation now today everything
-looks like I am ready for give up but I am promising for myself
-don't to give up.what are you advice me ????? so what is the
-problem with me? how I can out of this dark things? By making what
-I can out of this bullshit things and what I have to do???
-Today am on zero in case of financial, income i haven't anything.
-so I am searching a path to be out of this darkness world?
-"""
-
 from datetime import datetime
 from typing import Literal
 
